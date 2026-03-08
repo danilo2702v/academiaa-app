@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import os
 import sqlite3
 from datetime import date, datetime
@@ -10,8 +11,8 @@ from typing import Any
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 try:
-    import psycopg
-    from psycopg.rows import dict_row
+    psycopg = importlib.import_module("psycopg")
+    dict_row = importlib.import_module("psycopg.rows").dict_row
 except Exception:  # pragma: no cover
     psycopg = None
     dict_row = None
