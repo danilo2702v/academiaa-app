@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card narrow">
+  <h1>Entrar</h1>
+  <p class="muted">Admin inicial: usuario <b>admin</b> senha <b>admin123</b>.</p>
+  <form method="post" class="form">
+    <label>Usuario
+      <input type="text" name="username" required>
+    </label>
+    <label>Senha
+      <input type="password" name="password" required>
+    </label>
+    <button type="submit">Entrar</button>
+  </form>
+</section>
+{% endblock %}

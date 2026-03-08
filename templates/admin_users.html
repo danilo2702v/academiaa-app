@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Usuarios (Admin)</h1>
+<section class="card">
+  <h2>Novo usuario</h2>
+  <form method="post" class="form three">
+    <label>Usuario
+      <input type="text" name="username" required>
+    </label>
+    <label>Senha
+      <input type="password" name="password" required>
+    </label>
+    <label>Perfil
+      <select name="role">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+    </label>
+    <button type="submit">Criar</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Lista</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Usuario</th><th>Perfil</th><th>Criado em</th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr><td>{{ u.id }}</td><td>{{ u.username }}</td><td>{{ u.role }}</td><td>{{ u.created_at }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

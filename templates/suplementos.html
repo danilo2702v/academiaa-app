@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Suplementacao</h1>
+
+<section class="card">
+  <h2>Novo suplemento</h2>
+  <form method="post" class="form three">
+    <input type="hidden" name="action" value="add_supplement">
+    <label>Nome
+      <input type="text" name="name" required>
+    </label>
+    <label>Quantidade atual (g)
+      <input type="number" step="0.1" min="0.1" name="stock_grams" required>
+    </label>
+    <label>Dose por uso (g)
+      <input type="number" step="0.1" min="0.1" name="dose_grams" required>
+    </label>
+    <label>Uso por dia
+      <input type="number" min="1" name="intakes_per_day" value="1" required>
+    </label>
+    <label>Tipo de uso
+      <select name="usage_mode">
+        <option value="daily">Todos os dias</option>
+        <option value="training_days">Somente dia de treino</option>
+      </select>
+    </label>
+    <button type="submit">Salvar</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Controle e alertas</h2>
+  <p class="muted">Hoje: {{ weekday_label }} | Dia de treino hoje: {{ "Sim" if has_training_today else "Nao" }}</p>
+  {% if supplements %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Suplemento</th>
+            <th>Estoque inicial (g)</th>
+            <th>Consumido total (g)</th>
+            <th>Estoque real (g)</th>
+            <th>Ideal hoje (g)</th>
+            <th>Usado hoje (g)</th>
+            <th>Diferenca</th>
+            <th>Dias restantes</th>
+            <th>Registrar uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in supplements %}
+            <tr>
+              <td>{{ s.name }}<br><span class="muted">{{ "Uso diario" if s.usage_mode == "daily" else "Apenas em treino" }}</span></td>
+              <td>{{ s.stock_grams }}</td>
+              <td>{{ s.total_used }}</td>
+              <td>{{ s.remaining_real }}</td>
+              <td>{{ s.expected_today }}</td>
+              <td>{{ s.used_today }}</td>
+              <td>
+                <span class="{{ 'ok' if s.today_diff >= 0 else 'bad' }}">{{ s.today_diff }}</span>
+              </td>
+              <td>
+                <span class="{{ 'bad' if s.low_stock else '' }}">{{ s.days_left }}</span>
+              </td>
+              <td>
+                <form method="post" class="inline-form">
+                  <input type="hidden" name="action" value="log_usage">
+                  <input type="hidden" name="supplement_id" value="{{ s.id }}">
+                  <input type="date" name="use_date" value="{{ today_str }}" required>
+                  <input type="number" name="grams_used" min="0" step="0.1" value="{{ s.used_today }}" required>
+                  <button class="small" type="submit">Salvar</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Nenhum suplemento cadastrado.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Historico de uso diario</h2>
+  {% if recent_usage %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Suplemento</th><th>Gramas usadas</th></tr>
+        </thead>
+        <tbody>
+          {% for r in recent_usage %}
+            <tr>
+              <td>{{ r.use_date }}</td>
+              <td>{{ r.supplement_name }}</td>
+              <td>{{ r.grams_used }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Sem historico de uso ainda.</p>
+  {% endif %}
+</section>
+{% endblock %}

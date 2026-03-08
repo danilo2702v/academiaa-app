@@ -1,0 +1,84 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or "Academia App" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  {% set is_auth = session.get("user_id") %}
+  {% if is_auth %}
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+          <button class="icon-btn" type="button" onclick="toggleSidebarCollapse()" aria-label="Expandir menu">=</button>
+          <div class="brand sidebar-brand">Academiaa</div>
+        </div>
+        <nav class="side-nav">
+          <a class="{{ 'active' if request.endpoint == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}"><span class="nav-ico">[]</span><span class="nav-label">Dashboard</span></a>
+          <a class="{{ 'active' if request.endpoint in ['treinos', 'treino_detail'] else '' }}" href="{{ url_for('treinos') }}"><span class="nav-ico">#</span><span class="nav-label">Treinos</span></a>
+          <a class="{{ 'active' if request.endpoint == 'suplementos' else '' }}" href="{{ url_for('suplementos') }}"><span class="nav-ico">+</span><span class="nav-label">Suplementos</span></a>
+          <a class="{{ 'active' if request.endpoint == 'medidas' else '' }}" href="{{ url_for('medidas') }}"><span class="nav-ico">%</span><span class="nav-label">Medidas</span></a>
+          {% if session.get("role") == "admin" %}
+            <a class="{{ 'active' if request.endpoint == 'admin_users' else '' }}" href="{{ url_for('admin_users') }}"><span class="nav-ico">@</span><span class="nav-label">Usuarios</span></a>
+          {% endif %}
+          <a href="{{ url_for('logout') }}"><span class="nav-ico">x</span><span class="nav-label">Sair</span></a>
+        </nav>
+      </aside>
+
+      <button class="sidebar-overlay" id="sidebar-overlay" type="button" onclick="toggleSidebar(false)" aria-label="Fechar menu"></button>
+
+      <div class="content-area">
+        <header class="topbar">
+          <button class="mobile-menu-toggle" type="button" onclick="toggleSidebar()" aria-label="Abrir menu">Menu</button>
+          <div class="brand">Academiaa</div>
+        </header>
+  {% else %}
+    <header class="topbar">
+      <div class="brand">Academiaa</div>
+    </header>
+  {% endif %}
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="alerts">
+          {% for category, message in messages %}
+            <div class="alert {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  {% if is_auth %}
+      </div>
+    </div>
+  {% endif %}
+
+  <script>
+    function toggleSidebar(forceOpen) {
+      const open = document.body.classList.contains("sidebar-open");
+      const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : !open;
+      document.body.classList.toggle("sidebar-open", shouldOpen);
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById("sidebar");
+      sidebar.classList.toggle("is-collapsed");
+      const collapsed = sidebar.classList.contains("is-collapsed");
+      localStorage.setItem("sidebar-collapsed", collapsed ? "1" : "0");
+    }
+
+    (function loadSidebarState() {
+      const sidebar = document.getElementById("sidebar");
+      if (!sidebar) return;
+      const collapsed = localStorage.getItem("sidebar-collapsed");
+      if (collapsed === "0") sidebar.classList.remove("is-collapsed");
+      if (collapsed !== "0") sidebar.classList.add("is-collapsed");
+      if (window.innerWidth <= 680) document.body.classList.remove("sidebar-open");
+    })();
+  </script>
+</body>
+</html>

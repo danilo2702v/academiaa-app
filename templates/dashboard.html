@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+<section class="card">
+  <h2>Filtro por data</h2>
+  <form method="get" class="inline-form">
+    <label>De
+      <input type="date" name="date_from" value="{{ date_from or '' }}">
+    </label>
+    <label>Ate
+      <input type="date" name="date_to" value="{{ date_to or '' }}">
+    </label>
+    <button type="submit">Filtrar</button>
+    <a class="btn-link" href="{{ url_for('dashboard') }}">Limpar filtro</a>
+  </form>
+</section>
+<section class="grid four">
+  <article class="card stat"><h2>Treinos</h2><p>{{ workouts }}</p></article>
+  <article class="card stat"><h2>Registros de serie</h2><p>{{ logs }}</p></article>
+  <article class="card stat"><h2>Suplementos</h2><p>{{ supplements }}</p></article>
+  <article class="card stat"><h2>Medidas</h2><p>{{ measures }}</p></article>
+</section>
+<section class="card">
+  <h2>Progressao semanal</h2>
+  <p>Volume da semana <b>{{ week_label }}</b>: <b>{{ week_workload }}</b> (reps x kg)</p>
+  {% if week_progress is not none %}
+    <p>
+      Comparacao com {{ prev_week_label }}:
+      <b class="{{ 'ok' if week_progress >= 0 else 'bad' }}">{{ week_progress }}%</b>
+    </p>
+  {% else %}
+    <p class="muted">Ainda nao ha duas semanas com dados para comparar.</p>
+  {% endif %}
+</section>
+
+<section class="grid two">
+  <article class="card chart-card">
+    <h2>Volume semanal</h2>
+    <canvas id="weeklyChart"></canvas>
+  </article>
+  <article class="card chart-card">
+    <h2>Volume mensal</h2>
+    <canvas id="monthlyChart"></canvas>
+  </article>
+</section>
+
+<section class="card chart-card">
+  <h2>Registros por dia da semana</h2>
+  <canvas id="weekdayChart"></canvas>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const weeklyLabels = {{ weekly_labels | tojson }};
+  const weeklyValues = {{ weekly_values | tojson }};
+  const monthlyLabels = {{ monthly_labels | tojson }};
+  const monthlyValues = {{ monthly_values | tojson }};
+  const weekdayLabels = {{ weekday_chart_labels | tojson }};
+  const weekdayValues = {{ weekday_chart_values | tojson }};
+
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: "#f5f2ff" } }
+    },
+    scales: {
+      x: { ticks: { color: "#d6d1eb" }, grid: { color: "rgba(255,255,255,0.08)" } },
+      y: { ticks: { color: "#d6d1eb" }, grid: { color: "rgba(255,255,255,0.08)" } }
+    }
+  };
+
+  new Chart(document.getElementById("weeklyChart"), {
+    type: "line",
+    data: {
+      labels: weeklyLabels,
+      datasets: [{
+        label: "Volume (reps x kg)",
+        data: weeklyValues,
+        borderColor: "#ff2ca0",
+        backgroundColor: "rgba(255, 44, 160, 0.25)",
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: commonOptions
+  });
+
+  new Chart(document.getElementById("monthlyChart"), {
+    type: "bar",
+    data: {
+      labels: monthlyLabels,
+      datasets: [{
+        label: "Volume (reps x kg)",
+        data: monthlyValues,
+        backgroundColor: "rgba(177, 0, 255, 0.55)",
+        borderColor: "#b100ff",
+        borderWidth: 1
+      }]
+    },
+    options: commonOptions
+  });
+
+  new Chart(document.getElementById("weekdayChart"), {
+    type: "doughnut",
+    data: {
+      labels: weekdayLabels,
+      datasets: [{
+        data: weekdayValues,
+        backgroundColor: [
+          "#b100ff", "#ff2ca0", "#7b2ff7", "#5e35b1", "#8e24aa", "#d81b60", "#ec407a"
+        ],
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.2)"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "right", labels: { color: "#f5f2ff" } }
+      }
+    }
+  });
+</script>
+{% endblock %}

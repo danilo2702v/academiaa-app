@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ plan.name }} - {{ weekday_labels[plan.weekday] }}</h1>
+
+<section class="card">
+  <h2>Data do treino</h2>
+  <form method="get" class="inline-form">
+    <input type="date" name="d" value="{{ selected_date }}" required>
+    <button type="submit">Carregar</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Adicionar exercicio</h2>
+  <form method="post" class="inline-form">
+    <input type="hidden" name="action" value="add_exercise">
+    <input type="hidden" name="selected_date" value="{{ selected_date }}">
+    <input type="text" name="exercise_name" placeholder="Ex: Supino inclinado" required>
+    <button type="submit">Adicionar</button>
+  </form>
+</section>
+
+<section class="grid two">
+{% for c in exercise_cards %}
+  <article class="card">
+    <h3>{{ c.name }}</h3>
+    {% if c.previous_day %}
+      <p class="muted">Ultimo registro: {{ c.previous_day }}</p>
+      <ul class="list">
+      {% for s in c.previous_sets %}
+        <li>{{ s.reps }} reps x {{ s.weight_kg }} kg</li>
+      {% endfor %}
+      </ul>
+      {% if c.progress is not none %}
+        <p>
+          Evolucao:
+          <b class="{{ 'ok' if c.progress >= 0 else 'bad' }}">{{ c.progress }}%</b>
+          (volume vs ultimo treino)
+        </p>
+      {% endif %}
+    {% else %}
+      <p class="muted">Sem historico anterior.</p>
+    {% endif %}
+
+    <form method="post" class="form compact">
+      <input type="hidden" name="action" value="save_log">
+      <input type="hidden" name="exercise_id" value="{{ c.id }}">
+      <input type="hidden" name="workout_date" value="{{ selected_date }}">
+      <div class="row between">
+        <strong>Series de {{ selected_date }}</strong>
+        <button class="small" type="button" onclick="addSetRow('sets-{{ c.id }}')">+ Serie</button>
+      </div>
+      <div id="sets-{{ c.id }}" class="set-grid">
+        {% if c.current_sets %}
+          {% for s in c.current_sets %}
+            <input name="reps" type="number" min="1" placeholder="Reps" value="{{ s.reps }}">
+            <input name="weight" type="number" min="0" step="0.1" placeholder="Peso (kg)" value="{{ s.weight_kg }}">
+          {% endfor %}
+        {% else %}
+          <input name="reps" type="number" min="1" placeholder="Reps">
+          <input name="weight" type="number" min="0" step="0.1" placeholder="Peso (kg)">
+        {% endif %}
+      </div>
+      <button type="submit">Salvar registro</button>
+    </form>
+  </article>
+{% else %}
+  <article class="card">
+    <p class="muted">Esse treino ainda nao tem exercicios. Adicione acima para comecar.</p>
+  </article>
+{% endfor %}
+</section>
+
+<section class="card">
+  <h2>Historico recente (volume por exercicio)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Data</th><th>Exercicio</th><th>Volume (reps x kg)</th></tr></thead>
+      <tbody>
+      {% for h in history %}
+        <tr><td>{{ h.workout_date }}</td><td>{{ h.exercise_name }}</td><td>{{ '%.1f'|format(h.volume or 0) }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+function addSetRow(containerId) {
+  const wrap = document.getElementById(containerId);
+  const reps = document.createElement("input");
+  reps.name = "reps";
+  reps.type = "number";
+  reps.min = "1";
+  reps.placeholder = "Reps";
+  const weight = document.createElement("input");
+  weight.name = "weight";
+  weight.type = "number";
+  weight.min = "0";
+  weight.step = "0.1";
+  weight.placeholder = "Peso (kg)";
+  wrap.appendChild(reps);
+  wrap.appendChild(weight);
+}
+</script>
+{% endblock %}

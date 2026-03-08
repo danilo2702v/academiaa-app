@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Treinos por dia</h1>
+
+<section class="card">
+  <h2>Novo treino</h2>
+  <form method="post" class="form">
+    <label>Nome do treino
+      <input type="text" name="name" placeholder="Ex: Peito e Triceps" required>
+    </label>
+    <label>Dia da semana
+      <select name="weekday" required>
+        <option value="">Selecione</option>
+        {% for w in weekday_labels.keys() %}
+          <option value="{{ w }}">{{ weekday_labels[w] }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <div>
+      <div class="row between">
+        <label>Exercicios</label>
+        <button type="button" class="small" onclick="addExerciseInput()">+ Exercicio</button>
+      </div>
+      <div id="exercise-list">
+        <input type="text" name="exercise_name" placeholder="Ex: Supino reto" required>
+      </div>
+    </div>
+    <button type="submit">Salvar treino</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Seus treinos</h2>
+  {% if plans %}
+    <div class="grid two">
+      {% for p in plans %}
+        <article class="mini-card">
+          <h3>{{ p.name }}</h3>
+          <p>{{ weekday_labels[p.weekday] }}</p>
+          <p class="muted">{{ p.exercise_count }} exercicio(s)</p>
+          <a class="btn-link" href="{{ url_for('treino_detail', plan_id=p.id) }}">Abrir treino</a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">Nenhum treino cadastrado ainda.</p>
+  {% endif %}
+</section>
+
+<script>
+function addExerciseInput() {
+  const wrap = document.getElementById("exercise-list");
+  const input = document.createElement("input");
+  input.type = "text";
+  input.name = "exercise_name";
+  input.placeholder = "Nome do exercicio";
+  input.required = true;
+  wrap.appendChild(input);
+}
+</script>
+{% endblock %}

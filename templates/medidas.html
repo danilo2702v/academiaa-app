@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Medidas corporais</h1>
+
+<section class="card">
+  <h2>Nova medida</h2>
+  <form method="post" class="form three">
+    <label>Regiao do corpo
+      <input type="text" name="body_part" placeholder="Ex: Braco direito" required>
+    </label>
+    <label>Medida (cm)
+      <input type="number" step="0.1" min="0.1" name="value_cm" required>
+    </label>
+    <label>Data
+      <input type="date" name="measure_date" required>
+    </label>
+    <button type="submit">Salvar</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Comparativo de evolucao</h2>
+  {% if comparison %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Regiao</th><th>Atual</th><th>Anterior</th><th>Diferenca</th><th>%</th></tr></thead>
+        <tbody>
+        {% for c in comparison %}
+          <tr>
+            <td>{{ c.part }}</td>
+            <td>{{ c.latest_value }} cm ({{ c.latest_date }})</td>
+            <td>
+              {% if c.previous_value is not none %}
+                {{ c.previous_value }} cm ({{ c.previous_date }})
+              {% else %}
+                <span class="muted">Sem anterior</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.delta is not none %}
+                <span class="{{ 'ok' if c.delta >= 0 else 'bad' }}">{{ c.delta }} cm</span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              {% if c.pct is not none %}
+                <span class="{{ 'ok' if c.pct >= 0 else 'bad' }}">{{ c.pct }}%</span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Nenhuma medida cadastrada ainda.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Historico recente</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Data</th><th>Regiao</th><th>Valor (cm)</th></tr></thead>
+      <tbody>
+      {% for r in recent %}
+        <tr><td>{{ r.measure_date }}</td><td>{{ r.body_part }}</td><td>{{ r.value_cm }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
